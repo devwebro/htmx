@@ -157,7 +157,8 @@ def chat_stream():
                 current_count = len(messages)
                 if current_count != last_count:
                     # Send updated messages when new message arrives
-                    html = render_template('chat_messages.html', messages=messages)
+                    with app.app_context():
+                        html = render_template('chat_messages.html', messages=messages)
                     # Escape newlines and format properly for SSE
                     html = html.replace('\n', ' ').replace('\r', '')
                     yield f"event: message\ndata: {html}\n\n"
