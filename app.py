@@ -5,6 +5,9 @@ import os
 
 app = Flask(__name__)
 
+# Load todos on startup for production
+load_todos_on_startup = True
+
 # JSON file for persistent storage
 DATA_FILE = 'todos.json'
 
@@ -39,10 +42,14 @@ def save_todos():
         pass
 
 
+# Load todos when app starts (for production)
+if load_todos_on_startup:
+    load_todos()
+
+
 @app.route('/')
 def index():
     """Render the main page"""
-    load_todos()
     return render_template('index.html', todos=todos)
 
 
@@ -96,4 +103,5 @@ def delete_todo(todo_id):
 
 if __name__ == '__main__':
     load_todos()
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
