@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 from datetime import datetime
 import json
 import os
+import time
 
 app = Flask(__name__)
 
@@ -19,6 +20,7 @@ next_id = 1
 # In-memory storage for chat messages
 messages = []
 next_message_id = 1
+last_message_count = 0
 
 
 def load_todos():
@@ -143,6 +145,23 @@ def chat():
 def get_messages():
     """Get all chat messages"""
     return render_template('chat_messages.html', messages=messages)
+
+
+@app.route('/chat/stream')
+def chat_stream():
+    """Server-Sent Events stream for real-time chat updates"""
+    def generate():
+        last_count = len(messages)
+        while True:
+            current_count = len(messages)
+            if current_count != last_count:
+                # Send updated messages when new message arrives
+                html = render_template('chat_messages.html', messages=messages)
+                yield f"data: {html}\n\n"
+                last_count = current_count
+            time.sleep(0.5)  # Check every 500ms
+    
+    return Response(generate(), mimetype='text/event-stream')
 
 
 @app.route('/chat/messages', methods=['POST'])

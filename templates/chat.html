@@ -10,6 +10,7 @@
     
     <!-- htmx -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/sse.js"></script>
     
     <style>
         body {
@@ -85,9 +86,10 @@
             
             <!-- Chat Messages -->
             <div class="chat-messages" id="chat-messages"
-                 hx-get="/chat/messages"
-                 hx-trigger="every 2s"
-                 hx-swap="innerHTML swap:0s settle:0s">
+                 hx-ext="sse"
+                 sse-connect="/chat/stream"
+                 sse-swap="message"
+                 hx-swap="innerHTML">
                 {% include 'chat_messages.html' %}
             </div>
             
@@ -126,7 +128,7 @@
             </div>
         </div>
         <div class="text-center mt-3">
-            <small class="text-white">Messages update every 2 seconds</small>
+            <small class="text-white">Real-time updates via Server-Sent Events</small>
         </div>
     </div>
 
