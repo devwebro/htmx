@@ -140,15 +140,7 @@
         document.getElementById('chat-form').addEventListener('htmx:afterRequest', function(event) {
             if (event.detail.successful) {
                 document.getElementById('message-input').value = '';
-                // Scroll to bottom
-                const chatMessages = document.getElementById('chat-messages');
-                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
-        });
-        
-        // Auto-scroll to bottom on update
-        document.getElementById('chat-messages').addEventListener('htmx:afterSwap', function() {
-            this.scrollTop = this.scrollHeight;
         });
     </script>
 </body>
