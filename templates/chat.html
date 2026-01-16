@@ -43,17 +43,6 @@
         }
         .message {
             margin-bottom: 1rem;
-            animation: slideIn 0.3s ease;
-        }
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
         .message .card {
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -98,7 +87,7 @@
             <div class="chat-messages" id="chat-messages"
                  hx-get="/chat/messages"
                  hx-trigger="every 2s"
-                 hx-swap="innerHTML">
+                 hx-swap="innerHTML swap:0s settle:0s">
                 {% include 'chat_messages.html' %}
             </div>
             
