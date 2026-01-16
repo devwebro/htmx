@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Chat</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- htmx -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .card {
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border: none;
+            border-radius: 15px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            max-height: 500px;
+        }
+        .message {
+            margin-bottom: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .message .card {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            height: auto;
+        }
+        .message-header {
+            font-weight: bold;
+            color: #667eea;
+        }
+        .message-time {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+        .chat-input-container {
+            border-top: 2px solid #e9ecef;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 0 0 15px 15px;
+        }
+        .nav-link-custom {
+            color: white;
+            text-decoration: none;
+            opacity: 0.9;
+        }
+        .nav-link-custom:hover {
+            opacity: 1;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container chat-container">
+        <div class="card">
+            <div class="card-header header-gradient py-3 d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">💬 Real-Time Chat</h2>
+                <a href="/" class="nav-link-custom">
+                    <span>← Back to Todos</span>
+                </a>
+            </div>
+            
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chat-messages"
+                 hx-get="/chat/messages"
+                 hx-trigger="every 2s"
+                 hx-swap="innerHTML">
+                {% include 'chat_messages.html' %}
+            </div>
+            
+            <!-- Chat Input -->
+            <div class="chat-input-container">
+                <form hx-post="/chat/messages"
+                      hx-target="#chat-messages"
+                      hx-swap="innerHTML"
+                      class="needs-validation"
+                      id="chat-form">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <input type="text" 
+                                   name="username" 
+                                   class="form-control" 
+                                   placeholder="Your name"
+                                   value="Anonymous"
+                                   required>
+                        </div>
+                        <div class="col-md-7">
+                            <input type="text" 
+                                   name="message" 
+                                   class="form-control" 
+                                   placeholder="Type your message..."
+                                   required
+                                   autocomplete="off"
+                                   id="message-input">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary w-100" type="submit">
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            <small class="text-white">Messages update every 2 seconds</small>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Clear message input after sending
+        document.getElementById('chat-form').addEventListener('htmx:afterRequest', function(event) {
+            if (event.detail.successful) {
+                document.getElementById('message-input').value = '';
+                // Scroll to bottom
+                const chatMessages = document.getElementById('chat-messages');
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+        
+        // Auto-scroll to bottom on update
+        document.getElementById('chat-messages').addEventListener('htmx:afterSwap', function() {
+            this.scrollTop = this.scrollHeight;
+        });
+    </script>
+</body>
+</html>

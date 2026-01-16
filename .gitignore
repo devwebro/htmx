@@ -13,6 +13,7 @@ instance/
 
 # Data files
 todos.json
+chat.json
 
 # IDE
 .vscode/

@@ -10,10 +10,15 @@ load_todos_on_startup = True
 
 # JSON file for persistent storage
 DATA_FILE = 'todos.json'
+CHAT_FILE = 'chat.json'
 
 # In-memory storage for todos
 todos = []
 next_id = 1
+
+# In-memory storage for chat messages
+messages = []
+next_message_id = 1
 
 
 def load_todos():
@@ -42,9 +47,36 @@ def save_todos():
         pass
 
 
+def load_messages():
+    """Load chat messages from JSON file"""
+    global messages, next_message_id
+    if os.path.exists(CHAT_FILE):
+        try:
+            with open(CHAT_FILE, 'r') as f:
+                data = json.load(f)
+                messages = data.get('messages', [])
+                next_message_id = data.get('next_message_id', 1)
+        except (json.JSONDecodeError, IOError):
+            messages = []
+            next_message_id = 1
+    else:
+        messages = []
+        next_message_id = 1
+
+
+def save_messages():
+    """Save chat messages to JSON file"""
+    try:
+        with open(CHAT_FILE, 'w') as f:
+            json.dump({'messages': messages, 'next_message_id': next_message_id}, f, indent=2)
+    except IOError:
+        pass
+
+
 # Load todos when app starts (for production)
 if load_todos_on_startup:
     load_todos()
+    load_messages()
 
 
 @app.route('/')
@@ -99,6 +131,39 @@ def delete_todo(todo_id):
     
     save_todos()
     return render_template('todos.html', todos=todos)
+
+
+@app.route('/chat')
+def chat():
+    """Render the chat page"""
+    return render_template('chat.html', messages=messages)
+
+
+@app.route('/chat/messages', methods=['GET'])
+def get_messages():
+    """Get all chat messages"""
+    return render_template('chat_messages.html', messages=messages)
+
+
+@app.route('/chat/messages', methods=['POST'])
+def send_message():
+    """Send a new chat message"""
+    global next_message_id
+    username = request.form.get('username', 'Anonymous')
+    message = request.form.get('message')
+    
+    if message:
+        msg = {
+            'id': next_message_id,
+            'username': username,
+            'message': message,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        messages.append(msg)
+        next_message_id += 1
+        save_messages()
+        
+    return render_template('chat_messages.html', messages=messages)
 
 
 if __name__ == '__main__':
