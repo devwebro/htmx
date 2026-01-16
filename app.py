@@ -152,16 +152,24 @@ def chat_stream():
     """Server-Sent Events stream for real-time chat updates"""
     def generate():
         last_count = len(messages)
-        while True:
-            current_count = len(messages)
-            if current_count != last_count:
-                # Send updated messages when new message arrives
-                html = render_template('chat_messages.html', messages=messages)
-                yield f"data: {html}\n\n"
-                last_count = current_count
-            time.sleep(0.5)  # Check every 500ms
+        try:
+            while True:
+                current_count = len(messages)
+                if current_count != last_count:
+                    # Send updated messages when new message arrives
+                    html = render_template('chat_messages.html', messages=messages)
+                    # Escape newlines and format properly for SSE
+                    html = html.replace('\n', ' ').replace('\r', '')
+                    yield f"event: message\ndata: {html}\n\n"
+                    last_count = current_count
+                time.sleep(0.5)  # Check every 500ms
+        except GeneratorExit:
+            pass
     
-    return Response(generate(), mimetype='text/event-stream')
+    return Response(generate(), mimetype='text/event-stream', headers={
+        'Cache-Control': 'no-cache',
+        'X-Accel-Buffering': 'no'
+    })
 
 
 @app.route('/chat/messages', methods=['POST'])
